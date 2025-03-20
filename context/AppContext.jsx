@@ -1,8 +1,10 @@
 'use client'
 import { productsDummyData, userDummyData } from "@/assets/assets";
-import { useUser } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export const AppContext = createContext();
 
@@ -15,11 +17,12 @@ export const AppContextProvider = (props) => {
     const currency = process.env.NEXT_PUBLIC_CURRENCY
     const router = useRouter()
 
-    const {user}=useUser();
+    const {isLoaded, user} = useUser();
+    const {getToken}= useAuth(); // getToken is a method. with the help of which we can create multiple token for the authentication
 
     const [products, setProducts] = useState([])
     const [userData, setUserData] = useState(false)
-    const [isSeller, setIsSeller] = useState(true)
+    const [isSeller, setIsSeller] = useState(false)
     const [cartItems, setCartItems] = useState({})
 
     const fetchProductData = async () => {
@@ -27,7 +30,31 @@ export const AppContextProvider = (props) => {
     }
 
     const fetchUserData = async () => {
-        setUserData(userDummyData)
+        try{
+            console.log(user);
+
+            if(user.publicMetadata.role==='seller'){
+                setIsSeller(true);
+            }
+
+            const token=await getToken();
+            if (!token) {
+                console.error("Token is null or undefined!");
+            } else {
+                console.log("Generated Token:", token);
+            }
+            const {data}=await axios.get('/api/user/data', {headers: {Authorization: `Bearer ${token}`}});
+            console.log(data);
+            console.log(data);
+            if(data.success){
+                setUserData(data.user);
+                setCartItems(data.user.cartItems)
+            } else{
+                toast.error(data.message);
+            }
+        } catch(error){
+            toast.error(error.message);
+        }   
     }
 
     const addToCart = async (itemId) => {
@@ -81,11 +108,26 @@ export const AppContextProvider = (props) => {
     }, [])
 
     useEffect(() => {
-        fetchUserData()
-    }, [])
+        console.log("pagal")
+        if (isLoaded) {
+            console.log("Clerk user data loaded:", user);
+            if (user) {
+                console.log("User exists, calling fetchUserData...");
+                fetchUserData();
+            } else {
+                console.log("User is null or undefined.");
+            }
+        } else {
+            console.log("Clerk user data is still loading...");
+        }
+    }, [isLoaded, user]);
+
+    useEffect(() => {
+        console.log("Triggered! isLoaded:", isLoaded, "user:", user);
+    }, [isLoaded, user]);
 
     const value = {
-        user,
+        user, getToken,
         currency, router,
         isSeller, setIsSeller,
         userData, fetchUserData,
