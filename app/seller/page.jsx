@@ -2,19 +2,54 @@
 import React, { useState } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
+import { useAppContext } from "@/context/AppContext";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 const AddProduct = () => {
+
+  const {getToken}=useAppContext();
 
   const [files, setFiles] = useState([]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Earphone');
-  const [price, setPrice] = useState('');
-  const [offerPrice, setOfferPrice] = useState('');
+  const [price, setPrice] = useState(null);
+  const [offerPrice, setOfferPrice] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const formData= new FormData();
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('category', category);
+    formData.append('price', price !== null && price !== undefined ? price.toString() : '');
+    formData.append('offerPrice', offerPrice !== null && offerPrice !== undefined ? offerPrice.toString() : '');
+
+    for(let i=0;i<files.length;i++){
+      formData.append('images',files[i]);
+    }
+
+    try{
+      const token=await getToken();
+      const {data}= await axios.post('/api/product/add', formData, {headers: {Authorization: `Bearer ${token}`}});
+      console.log(data.success)
+      
+      if(data.success){
+        toast.success(data.message);
+        setFiles([]);
+        setName('');
+        setDescription('');
+        setCategory('Earphone');
+        setPrice(null);
+        setOfferPrice(null);
+      } else{
+        toast.error(data.message);
+      }
+    } catch(error){
+      toast.error(error.message);
+    }
   };
 
   return (
@@ -91,6 +126,7 @@ const AddProduct = () => {
               <option value="Watch">Watch</option>
               <option value="Smartphone">Smartphone</option>
               <option value="Laptop">Laptop</option>
+              <option value="Laptop">Telivision</option>
               <option value="Camera">Camera</option>
               <option value="Accessories">Accessories</option>
             </select>
@@ -105,7 +141,7 @@ const AddProduct = () => {
               placeholder="0"
               className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
               onChange={(e) => setPrice(e.target.value)}
-              value={price}
+              value={price?price:''}
               required
             />
           </div>
@@ -119,7 +155,7 @@ const AddProduct = () => {
               placeholder="0"
               className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
               onChange={(e) => setOfferPrice(e.target.value)}
-              value={offerPrice}
+              value={offerPrice?offerPrice:''}
               required
             />
           </div>

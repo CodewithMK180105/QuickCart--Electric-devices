@@ -31,21 +31,21 @@ export const AppContextProvider = (props) => {
 
     const fetchUserData = async () => {
         try{
-            console.log(user);
+            // console.log(user);
 
             if(user.publicMetadata.role==='seller'){
                 setIsSeller(true);
             }
 
             const token=await getToken();
-            if (!token) {
-                console.error("Token is null or undefined!");
-            } else {
-                console.log("Generated Token:", token);
-            }
+            // if (!token) {
+            //     console.error("Token is null or undefined!");
+            // } else {
+            //     console.log("Generated Token:", token);
+            // }
             const {data}=await axios.get('/api/user/data', {headers: {Authorization: `Bearer ${token}`}});
-            console.log(data);
-            console.log(data);
+            // console.log(data);
+            // console.log(data);
             if(data.success){
                 setUserData(data.user);
                 setCartItems(data.user.cartItems)
@@ -108,23 +108,23 @@ export const AppContextProvider = (props) => {
     }, [])
 
     useEffect(() => {
-        console.log("pagal")
+        // console.log("pagal")
         if (isLoaded) {
-            console.log("Clerk user data loaded:", user);
+            // console.log("Clerk user data loaded:", user);
             if (user) {
-                console.log("User exists, calling fetchUserData...");
+                // console.log("User exists, calling fetchUserData...");
                 fetchUserData();
             } else {
-                console.log("User is null or undefined.");
+                // console.log("User is null or undefined.");
             }
         } else {
-            console.log("Clerk user data is still loading...");
+            // console.log("Clerk user data is still loading...");
         }
     }, [isLoaded, user]);
 
-    useEffect(() => {
-        console.log("Triggered! isLoaded:", isLoaded, "user:", user);
-    }, [isLoaded, user]);
+    // useEffect(() => {
+    //     console.log("Triggered! isLoaded:", isLoaded, "user:", user);
+    // }, [isLoaded, user]);
 
     const value = {
         user, getToken,
