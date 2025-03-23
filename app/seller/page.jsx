@@ -34,7 +34,7 @@ const AddProduct = () => {
     try{
       const token=await getToken();
       const {data}= await axios.post('/api/product/add', formData, {headers: {Authorization: `Bearer ${token}`}});
-      console.log(data.success)
+      // console.log(data.success)
       
       if(data.success){
         toast.success(data.message);
@@ -126,7 +126,7 @@ const AddProduct = () => {
               <option value="Watch">Watch</option>
               <option value="Smartphone">Smartphone</option>
               <option value="Laptop">Laptop</option>
-              <option value="Laptop">Telivision</option>
+              <option value="Telivision">Telivision</option>
               <option value="Camera">Camera</option>
               <option value="Accessories">Accessories</option>
             </select>
