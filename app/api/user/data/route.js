@@ -1,11 +1,11 @@
 import connectDB from "@/config/db";
 import User from "@/models/user.models";
 import { getAuth } from "@clerk/nextjs/server";
-// import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 
 export async function GET(request){
     try{
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // for making the delay (Since Clerk authentication might take a moment to process, try adding a short delay before fetching the user.)
         const {userId}=getAuth(request);
         // console.log(userId);
         await connectDB();
@@ -19,3 +19,4 @@ export async function GET(request){
         return NextResponse.json({ success: false, message: error.message });
     }
 }
+
