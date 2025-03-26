@@ -1,6 +1,7 @@
 import { Inngest } from "inngest";
 import connectDB from "./db.js";
 import User from "@/models/user.models.js";
+import Order from "@/models/order.models.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "quickcart-next" });
@@ -59,5 +60,40 @@ export const syncUserDeletion= inngest.createFunction(
         const {id}=event.data;
         await connectDB();
         await User.findByIdAndDelete(id);
+    }
+)
+
+
+// We will use the batching process of the inngest to manage the read and the write operation to the database efficiently
+// Inngest also provide the queue process and the concurrency process. But here we are using the batching process
+
+// Inngest function to create the user's order in the database.
+export const createUserOrder= inngest.createFunction(
+    {
+        id: "create-user-order",
+        batchEvents: {
+            maxSize: 25,
+            timeout: "5s"
+        }
+    },
+    {event: "order/created"},
+    async({events})=>{
+        const orders=events.map((event)=>{
+            return {
+                userId: event.data.userId,
+                items: event.data.items,
+                amount: event.data.amount,
+                address: event.data.address,
+                date: event.data.date
+            }
+        })
+
+        await connectDB();
+        await Order.insertMany(orders);
+
+        return {
+            success: true,
+            processed: orders.length
+        }
     }
 )
