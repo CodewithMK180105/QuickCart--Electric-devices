@@ -1,0 +1,15 @@
+stripe payment ===> 
+
+Go to developers option and select 'API keys' 
+Take the 2 API keys present there
+
+Go to developers option and select 'Web Hooks' 
+Add new Destination ===> 1. Select API version
+                         2. select the events
+                         3. Continue
+                         4. In the endpoint url paste the deployed link ==> "deployedlink/api/stripe"
+                         5. Click on Create Destination
+                         6. Copy the Sign In secret code
+                         7. Integrate the WebHooks
+
+Integration of the WebHook: Create an endpoint (api/stripe/route.js) to listen and update the isPaid property
